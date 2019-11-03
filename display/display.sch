@@ -1938,4 +1938,26 @@ Wire Bus Line
 	7900 5500 7900 6200
 Wire Bus Line
 	8200 5150 8200 6200
+$Comp
+L Mechanical:MountingHole H1
+U 1 1 5DC0A347
+P 3550 800
+F 0 "H1" H 3650 846 50  0000 L CNN
+F 1 "MountingHole" H 3650 755 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.2mm_M2" H 3550 800 50  0001 C CNN
+F 3 "~" H 3550 800 50  0001 C CNN
+	1    3550 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole H2
+U 1 1 5DC0A3B3
+P 4750 800
+F 0 "H2" H 4850 846 50  0000 L CNN
+F 1 "MountingHole" H 4850 755 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.2mm_M2" H 4750 800 50  0001 C CNN
+F 3 "~" H 4750 800 50  0001 C CNN
+	1    4750 800 
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

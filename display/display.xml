@@ -2,7 +2,7 @@
 <export version="D">
   <design>
     <source>D:\Dator\display\display.sch</source>
-    <date>2019-11-02 13:32:36</date>
+    <date>2019-11-03 11:17:10</date>
     <tool>Eeschema (5.1.4)-1</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -225,6 +225,22 @@
       <libsource lib="Device" part="R" description="Resistor"/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>5DBED215</tstamp>
+    </comp>
+    <comp ref="H1">
+      <value>MountingHole</value>
+      <footprint>MountingHole:MountingHole_2.2mm_M2</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DC0A347</tstamp>
+    </comp>
+    <comp ref="H2">
+      <value>MountingHole</value>
+      <footprint>MountingHole:MountingHole_2.2mm_M2</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DC0A3B3</tstamp>
     </comp>
   </components>
   <libparts>
@@ -568,6 +584,17 @@
         <pin num="12" name="CC1" type="input"/>
       </pins>
     </libpart>
+    <libpart lib="Mechanical" part="MountingHole">
+      <description>Mounting Hole without connection</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>MountingHole*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">MountingHole</field>
+      </fields>
+    </libpart>
     <libpart lib="Transistor_BJT" part="2N3906">
       <aliases>
         <alias>2N3905</alias>
@@ -607,6 +634,9 @@
     </library>
     <library logical="Display_Character">
       <uri>D:\KiCad\share\kicad\library/Display_Character.lib</uri>
+    </library>
+    <library logical="Mechanical">
+      <uri>D:\KiCad\share\kicad\library/Mechanical.lib</uri>
     </library>
     <library logical="Transistor_BJT">
       <uri>D:\KiCad\share\kicad\library/Transistor_BJT.lib</uri>

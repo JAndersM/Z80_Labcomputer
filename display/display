@@ -1,6 +1,7 @@
 Reference, Quantity, Value, Footprint, Datasheet
 C1 ,1,"100u","Capacitor_THT:CP_Radial_D6.3mm_P2.50mm","~"
 C6 C5 C2 C3 C4 ,5,"47n","Capacitor_THT:C_Disc_D3.0mm_W1.6mm_P2.50mm","~"
+H1 H2 ,2,"MountingHole","MountingHole:MountingHole_2.2mm_M2","~"
 J1 ,1,"IO out","Connector_PinHeader_2.54mm:PinHeader_1x24_P2.54mm_Vertical","~"
 J2 ,1,"IO in","Connector_PinHeader_2.54mm:PinHeader_1x24_P2.54mm_Vertical","~"
 Q1 Q2 Q3 Q4 ,4,"2N3906","Package_TO_SOT_THT:TO-92L_Inline_Wide","https://www.fairchildsemi.com/datasheets/2N/2N3906.pdf"
