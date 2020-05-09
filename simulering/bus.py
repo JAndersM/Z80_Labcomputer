@@ -2,14 +2,14 @@ import sys
 
 #Simulates a memory that has
 #ROM 0000 -> RAMstart-1
-#RAM RAMstart -> RAMmax
+#RAM RAMstart -> RAMTOP
 class Memory:
 
-    def __init__(self, RAMstart, RAMmax, logf):
+    def __init__(self, RAMstart, RAMTOP, logf):
         self.logf=logf
         self.RAMstart=RAMstart
-        self.RAMmax=RAMmax
-        self.mem=bytearray(RAMmax+1)
+        self.RAMmax=RAMTOP
+        self.mem=bytearray(RAMTOP+1)
 
     def read(self, adress, clk):
         try:
@@ -40,7 +40,9 @@ class Memory:
             return False
         else:
             return True
-          
+        
+#IO ports for WRITE IO adresses
+#Connects periferials to the CPU IO
 class IOports:
     #Periferials is a dictionary of adresses and objekt for IO
     def __init__(self, logf, periferials):

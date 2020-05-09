@@ -45,9 +45,10 @@ class Z80CPU:
         b=byte ^(byte>>1)
         b=b ^ (b>>2)
         b=b ^ (b>>4)
-        return (p & 1)*Z80CPU.flags["P"]
+        return (b & 1)*Z80CPU.flags["P"]
 
 ##Init
+    # Creates CPU with associated Mempry and IO-ports
     #MEM-memory object, IO-ioport object, cpu log file object
     def __init__(self, MEM, IO, logf):
         self.logf=logf
@@ -73,7 +74,7 @@ class Z80CPU:
         self.clk=0
 
 ## Helper methods
-        #Reads two bytes @ PC+1, PC+2
+    #Reads two bytes @ PC+1, PC+2
     def getadr(self, sep=False):
         l= self.MEM.read(self.sreg["PC"]+1,self.clk)
         h = self.MEM.read(self.sreg["PC"]+2,self.clk)
@@ -87,85 +88,107 @@ class Z80CPU:
         return self.MEM.read(self.sreg["PC"]+1,self.clk)
     
 ## Instruction methods
-# returns size, clock cykles, instruction
-
-    def andr(self):
+    # returns size, clock cykles, instruction
+    def andn(self):
         b=self.getbyte()
         self.reg["A"]= self.reg["A"] & b
         z, s = Z80CPU.calcZS(self.reg["A"])
         p = Z80CPU.calcP(self.reg["A"])
         self.reg["F"] = p | Z80CPU.flags["H"] | z | s
         return (2,7, "AND {0:02X}".format(b))
-    
+
+    #CALL, CALL cc
     def call(self, cc) :
         adr=self.getadr()
-        if not Z80CPU.cond(cc,self.sreg["F"]):
+        if not Z80CPU.cond(cc,self.reg["F"]):
             return (3, 10, "CALL"+cc+"{0:04X}".format(adr))
+        self.sreg["PC"]+=3
         self.push()
         self.sreg["PC"]=adr
         return (0, 17, "CALL "+cc+"{0:04X}".format(adr))
-        
+
+    #INC r    
     def incr(self, key):
         self.reg[key], c, v, h = Z80CPU.calcCVH(self.reg[key], self.reg[key]+1)
         z, s = Z80CPU.calcZS(self.reg[key])
         fs = ( v | h | z | s) & ~Z80CPU.flags["N"]
         self.reg["F"] = (self.reg["F"] & Z80CPU.flags["C"]) | fs 
         return (1,4, "INC "+key)
-    
+
+    #JP, JP cc
+    def jp(self,cc):
+        adr=self.getadr(False)
+        if not Z80CPU.cond(cc,self.reg["F"]):
+            return (3, 10, "JP "+cc+" {0:04X}".format(adr))
+        self.sreg["PC"]=adr
+        return (0, 10, "JP "+cc+", {0:02X}".format(adr))
+
+    #JR, JR cc    
     def jr(self, cc): 
         sbyte=self.getbyte()
         if not Z80CPU.cond(cc,self.reg["F"]):
-            return (2, 7, "JR"+cc+"{0:02X}".format(sbyte))
+            return (2, 7, "JR "+cc+", {0:02X}".format(sbyte))
         dpc=2
         if sbyte<128:
             dpc += sbyte
         else:
             dpc += sbyte-256
-        return (dpc, 12, "JR {0:02X}".format(sbyte))
+        return (dpc, 12, "JR "+cc+", {0:02X}".format(sbyte))
 
+    #LD A, (rr)
     def ldafrr(self, key1, key2):
         adr=(self.reg[key1] << 8) + self.reg[key2]
         self.reg["A"]=self.MEM.read(adr,self.clk)
-        return (1,7, "LD A,"+key1+key2)
+        return (1,7, "LD A, "+key1+key2)
 
+    #LD (rr), A
     def ldatrr(self, key1, key2):
         adr=(self.reg[key1] << 8) + self.reg[key2]
         self.MEM.write(adr,self.reg["A"], self.clk)
-        return (1,7, "LD ("+key1+key2+"),A")
-    
+        return (1,7, "LD ("+key1+key2+"), A")
+
+    #LD r, n    
     def ldbyte(self, key):
         self.reg[key] = self.getbyte()
-        return (2,7, "LD "+key+" {0:02X}".format(self.reg[key]))
+        return (2,7, "LD "+key+", {0:02X}".format(self.reg[key]))
 
+    #LD rr, nn 
     def ldint(self, keyh, keyl):
         self.reg[keyl], self.reg[keyh]=self.getadr(True)
-        return (3,20, "LD "+keyl+keyh+" {0:04X}".format(self.reg[keyl]+(self.reg[keyh]<<8)))
+        return (3,20, "LD "+keyl+keyh+", {0:04X}".format(self.reg[keyl]+(self.reg[keyh]<<8)))
 
+    #LD r, r 
     def ldreg(self, keyt, keyf):
         self.reg[keyt] = self.reg[keyf]
         return (1,4, "LD "+keyt+", "+keyf)
 
+    #LD r, (HL) 
     def ldfhl(self, key):
         adr=(self.reg["H"] << 8) + self.reg["L"]
         self.reg[key]=self.MEM.read(adr,self.clk)
-        return (1,7, "LD "+key+",(HL)")
+        return (1,7, "LD "+key+", (HL)")
 
+    #LD (HL), r
     def ldthl(self, key):
         adr=(self.reg["H"] << 8) + self.reg["L"]
         self.MEM.write(adr,self.reg[key], self.clk)
-        return (1,7, "LD (HL),"+key)
-    
+        return (1,7, "LD (HL), "+key)
+
+    #LD SP, nn    
     def ldsp(self):
-        self.reg["P"], self.reg["S"] = self.getadr(True)
-        adr=self.reg["P"]+(self.reg["S"]<<8)
+        adr = self.getadr(False)
         if not self.MEM.inRAM(adr):
             print("Error: Stack pointer outside RAM")
-        return (3,20, "LD SP"+" {0:04X}".format(adr))
-        
-    def nop(self):
-        return (1,4, "NOP")
+        else:
+            self.sreg["SP"]=adr
+        return (3,20, "LD SP"+", {0:04X}".format(adr))
 
-    def orr(self):
+    #NOP        
+    def nop(self):
+        return (1,4, "NOP\t")
+
+    #OR n
+    def orn(self):
         b=self.getbyte()
         self.reg["A"]= self.reg["A"] | b
         z, s = Z80CPU.calcZS(self.reg["A"])
@@ -173,6 +196,7 @@ class Z80CPU:
         self.reg["F"] = p | Z80CPU.flags["H"] | z | s
         return (2,7, "OR {0:02X}".format(b))
 
+    #POP
     def pop(self, qq="PC"):
         l=self.MEM.read(self.sreg["SP"],self.clk)
         self.sreg["SP"] +=1
@@ -183,7 +207,8 @@ class Z80CPU:
         else:
             pass #TODO
         return(1,10, "POP " + qq)
-    
+
+    #PUSH    
     def push(self, qq="PC"):
         if qq=="PC":
             data=self.sreg["PC"]
@@ -195,14 +220,16 @@ class Z80CPU:
         self.MEM.write(self.sreg["SP"], data & 255 ,self.clk)
         return(1,11, "PUSH " + qq)
 
+    #RET, RET cc
     def ret(self, cc) :
-        if not Z80CPU.cond(cc,self.sreg["F"]):
+        if not Z80CPU.cond(cc,self.reg["F"]):
             return (1, 5, "CALL"+cc+"{0:04X}".format(adr))
-        self.sreg["PC"]=self.pop()
+        self.pop()
         if cc=="":
-            return (0, 10, "RET")
+            return (0, 10, "RET\t")
         return (0, 11, "RET "+cc)
 
+    #RRA
     def rra(self):
         cy=self.reg["A"] & 1
         self.reg["A"]= (self.reg["A"] >> 1) | (self.reg["F"] & Z80CPU.flags["C"])<<7
@@ -210,16 +237,18 @@ class Z80CPU:
         self.reg["F"]=(((self.reg["F"] & ~Z80CPU.flags["C"]) | cy) &
                        ~Z80CPU.flags["N"] & ~Z80CPU.flags["H"])
         return (1, 4, "RRA\t")
-    
+
+    #OUT (n), A    
     def outa(self):
         adr=self.getbyte()
         self.IO.write(adr,self.reg["A"], self.clk)
-        return (2,11, "OUT" +" {0:02X}".format(adr)+",A")
+        return (2,11, "OUT" +" {0:02X}".format(adr)+", A")
     
 ## Opcodes and their methods
-    def notfound(self):
-        print("Error: OP code not found!")
-    
+    def notfound(self, ibyte):
+        print("Error: OP code not found: {0:02X}".format(ibyte))
+
+    #Makes metod calls to execute opcodes
     def doinst(self, ibyte):
         r= {
             0x00: self.nop,
@@ -230,6 +259,7 @@ class Z80CPU:
             0x0A: lambda: self.ldafrr("B", "C"),
             0x0C: lambda: self.incr("C"),
             0x0E: lambda: self.ldbyte("C"),
+            0x11: lambda: self.ldint("D", "E"),
             0x12: lambda: self.ldatrr("D", "E"),
             0x14: lambda: self.incr("D"),
             0x16: lambda: self.ldbyte("D"),
@@ -239,6 +269,7 @@ class Z80CPU:
             0x1E: lambda: self.ldbyte("E"),
             0x1f: self.rra,
             0x20: lambda: self.jr("NZ"),
+            0x21: lambda: self.ldint("H", "L"),
             0x24: lambda: self.incr("H"),
             0x26: lambda: self.ldbyte("H"),
             0x28: lambda: self.jr("Z"),
@@ -312,14 +343,23 @@ class Z80CPU:
             0x7D: lambda: self.ldreg("A","L"),
             0x7E: lambda: self.ldfhl("A"),
             0x7F: lambda: self.ldreg("A","A"),
+            0xC2: lambda: self.jp("NZ"),
             0xC9: lambda: self.ret(""),
+            0xCA: lambda: self.jp("Z"),
             0xCD: lambda: self.call(""),
-            0xD3: self.outa
-            }.get(ibyte, self.notfound)()
+            0xD2: lambda: self.jp("NC"),
+            0xD3: self.outa,
+            0xDA: lambda: self.jp("C"),
+            0xE2: lambda: self.jp("PO"),
+            0xE6: self.andn,
+            0xEA: lambda: self.jp("PE"),
+            0xF2: lambda: self.jp("P"),
+            0xFA: lambda: self.jp("M"),
+            0xF6: self.orn
+            }.get(ibyte, lambda: self.notfound(ibyte))()
         return r
 
-## Running the CPU
-         
+## Running the CPU        
     def run(self, tmax=-1, verbose=False):
         while tmax==-1 or self.clk<tmax:
             pc=self.sreg["PC"]
@@ -327,15 +367,15 @@ class Z80CPU:
             ic=self.MEM.read(pc,self.clk)
             mes="{0:6d} {1:4X} ".format(self.clk,pc)
             if ic == 0x76 : #HALT
-                mes+="HALT \t\t{0:08b}\n".format(self.reg["F"])
-                self.logf.write(mes)
+                mes+="HALT"
                 self.mHALT=True
-                break
             else:
                 dpc, dclk, ins = self.doinst(ic)
-            mes +=ins
+                self.sreg["PC"] +=dpc
+                self.clk += dclk
+                mes +=ins
             if verbose:
                 print(mes)
             self.logf.write(mes+"\t\t{0:08b}\n".format(self.reg["F"]))
-            self.sreg["PC"] +=dpc
-            self.clk += dclk
+            if self.mHALT :
+                return

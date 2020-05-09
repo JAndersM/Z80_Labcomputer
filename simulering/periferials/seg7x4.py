@@ -1,5 +1,8 @@
+#Uses graphics.py library written by John Zelle (GPL)
+#https://mcsp.wartburg.edu/zelle/python/graphics.py
 from graphics import *
 
+#Single 7-segment digit
 class Digit:
 
     def __init__(self, x0, y0):
@@ -55,6 +58,7 @@ class Digit:
         self.f.setFill(col[ 1 if (byte & 32) else 0])
         self.g.setFill(col[ 1 if (byte & 64) else 0])
 
+#I/O port corresponding to one out adress on the bus
 class Port:
 
     def __init__(self, adress, digit):
@@ -67,7 +71,8 @@ class Port:
 
     def write(self, data):
         self.digit.setSegments(data)
-    
+
+#The 4 digit display    
 class S74D:
 
     sb=[0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07,
