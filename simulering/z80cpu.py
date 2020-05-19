@@ -107,6 +107,27 @@ class Z80CPU:
         self.sreg["PC"]=adr
         return (0, 17, "CALL "+cc+"{0:04X}".format(adr))
 
+    #DEC r   
+    def decr(self, key):
+        self.reg[key], c, v, h = Z80CPU.calcCVH(self.reg[key], self.reg[key]-1)
+        z, s = Z80CPU.calcZS(self.reg[key])
+        fs = ( v | h | z | s) & ~Z80CPU.flags["N"]
+        self.reg["F"] = (self.reg["F"] & Z80CPU.flags["C"]) | fs 
+        return (1,4, "DEC "+key)
+    
+    #DJNZ e
+    def djnz(self):
+        self.decr("B")
+        sbyte=self.getbyte()
+        if Z80CPU.cond("Z",self.reg["F"]):
+            return (2, 8, "DJNZ {0:02X}".format(sbyte))
+        dpc=2
+        if sbyte<128:
+            dpc += sbyte
+        else:
+            dpc += sbyte-256
+        return (dpc, 13, "DJNZ {0:02X}".format(sbyte))
+        
     #INC r    
     def incr(self, key):
         self.reg[key], c, v, h = Z80CPU.calcCVH(self.reg[key], self.reg[key]+1)
@@ -255,30 +276,38 @@ class Z80CPU:
             0x01: lambda: self.ldint("B", "C"),
             0x02: lambda: self.ldatrr("B", "C"),
             0x04: lambda: self.incr("B"),
+            0x05: lambda: self.decr("B"),
             0x06: lambda: self.ldbyte("B"),
             0x0A: lambda: self.ldafrr("B", "C"),
             0x0C: lambda: self.incr("C"),
+            0x0D: lambda: self.decr("C"),
             0x0E: lambda: self.ldbyte("C"),
+            0x10: self.djnz
             0x11: lambda: self.ldint("D", "E"),
             0x12: lambda: self.ldatrr("D", "E"),
             0x14: lambda: self.incr("D"),
+            0x15: lambda: self.decr("D"),
             0x16: lambda: self.ldbyte("D"),
             0x18: lambda: self.jr(""),
             0x1A: lambda: self.ldafrr("D", "E"),
             0x1C: lambda: self.incr("E"),
+            0x1D: lambda: self.decr("E"),
             0x1E: lambda: self.ldbyte("E"),
             0x1f: self.rra,
             0x20: lambda: self.jr("NZ"),
             0x21: lambda: self.ldint("H", "L"),
             0x24: lambda: self.incr("H"),
+            0x25: lambda: self.decr("H"),
             0x26: lambda: self.ldbyte("H"),
             0x28: lambda: self.jr("Z"),
             0x2C: lambda: self.incr("L"),
+            0x2D: lambda: self.decr("L"),
             0x2E: lambda: self.ldbyte("L"),
             0x30: lambda: self.jr("NC"),
             0x31: self.ldsp,
             0x38: lambda: self.jr("C"),
             0x3C: lambda: self.incr("A"),
+            0x3D: lambda: self.decr("A"),
             0x3E: lambda: self.ldbyte("A"),
             0x40: lambda: self.ldreg("B","B"),
             0x41: lambda: self.ldreg("B","C"),
