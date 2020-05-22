@@ -1,8 +1,12 @@
+//NOT CHECKED!
 #define SHIFT_ADRESS 2
-#define SHIFT_CLK 3
-#define ADRESS_CLK 4
+#define SHIFT_CLK 4
+#define ADRESS_CLK 3
 #define WE_ 13
-#define OE_ 14
+#define RE_ 14
+#define BRQ_ 15
+#define BAK_ 16
+#define AOE_ 17
 #define D0 5 //datapins 5 to 12
 
 const unsigned int start_adress = 0x0000;
@@ -17,7 +21,7 @@ void shiftAdress(unsigned int adress) {
 }
 
 void writeData() {
-  digitalWrite(OE_, HIGH);
+  digitalWrite(RE_, HIGH);
   delayMicroseconds(1);
   for (int p=0; p<8; p++) {
     pinMode(D0+p, OUTPUT);
@@ -61,13 +65,13 @@ void readData(int read_length) {
   for (int i = 0; i < read_length; i++) {
     shiftAdress(start_adress+i);
     delayMicroseconds(1);
-    digitalWrite(OE_, LOW);
+    digitalWrite(RE_, LOW);
     delayMicroseconds(1);
     byte dat=0;
     for (int p = D0+7; p >= D0; p -= 1) {
       dat = (dat << 1) + digitalRead(p);
     }
-    digitalWrite(OE_, HIGH);
+    digitalWrite(RE_, HIGH);
     if (i%16 == 0) {
       Serial.print("\n");
       Serial.print(start_adress+i, HEX);
@@ -84,14 +88,21 @@ void setup() {
   pinMode(SHIFT_CLK, OUTPUT);
   pinMode(ADRESS_CLK, OUTPUT);
   pinMode(WE_, OUTPUT);
-  pinMode(OE_, OUTPUT);
+  pinMode(RE_, OUTPUT);
+  pinMode(BRQ_, OUTPUT);
+  pinMode(BAK_, INPUT);
+  pinMode(AOE_, OUTPUT);
   for (int p=0; p<8; p++) {
     pinMode(D0+p, INPUT);
   }
   digitalWrite(WE_, HIGH);
-  digitalWrite(OE_, HIGH);
+  digitalWrite(RE_, HIGH);
+  digitalWrite(AOE_, HIGH);
+  digitalWrite(BRQ_, LOW);
   digitalWrite(ADRESS_CLK, LOW);
   delay(200);
+  while (digitalRead(BAK_)) delay(200);
+  digitalWrite(AOE_, LOW);
   runOnce();
 }
 void runOnce() {

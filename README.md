@@ -16,7 +16,7 @@ Clock, Reset etc.
 7x4-segment display and IO-connections to adress 0-3
 * Schema PCB design
 
-##tangentbord
+## tangentbord
 Hex values input keyboard
 * Schema, PCB design
 Needs redesign
@@ -24,7 +24,7 @@ Needs redesign
 ## EEPROMprogrammer
 Arduino code and design for an Arduino Nano (or similar) based EEPROMprogrammer
 * Schema, PCB design
-Pending redesign for use connected to the computer using BUSRQ to facilitate programming without removing ROM.
+Connected to the computer using BUSRQ to facilitate programming without removing ROM.
 
 ## simulering
 Python simulation of the z80 cpu and the computer
@@ -36,5 +36,5 @@ Holder for the Dator PCB
 * 3D printed and tested
 
 
-Used software:
+## Used software:
 KiCad, FreeCAD, Python, Arduino IDE
