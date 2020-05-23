@@ -470,7 +470,7 @@ Wire Wire Line
 Wire Wire Line
 	2700 4700 2700 5150
 Wire Wire Line
-	2700 5150 3250 5150
+	2700 5150 3000 5150
 Text Label 2900 5050 0    50   ~ 0
 ~BUSACK
 Wire Wire Line
@@ -576,7 +576,7 @@ U 1 1 5EC7CBFC
 P 4000 5500
 F 0 "R1" V 3900 5500 50  0000 C CNN
 F 1 "2k2" V 4000 5500 50  0000 C CNN
-F 2 "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 3930 5500 50  0001 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 3930 5500 50  0001 C CNN
 F 3 "~" H 4000 5500 50  0001 C CNN
 	1    4000 5500
 	0    1    1    0   
@@ -593,10 +593,6 @@ Wire Wire Line
 	2800 5050 3750 5050
 Wire Wire Line
 	3750 5050 3900 5050
-Wire Bus Line
-	2300 3400 3000 3400
-Wire Bus Line
-	7700 3550 7700 4250
 Connection ~ 3750 5050
 $Comp
 L power:+5V #PWR0101
@@ -609,4 +605,35 @@ F 3 "" H 2100 2750 50  0001 C CNN
 	1    2100 2750
 	-1   0    0    1   
 $EndComp
+$Comp
+L Device:R R2
+U 1 1 5EC97012
+P 3000 5300
+F 0 "R2" H 3070 5346 50  0000 L CNN
+F 1 "10k" V 3000 5250 50  0000 L CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal" V 2930 5300 50  0001 C CNN
+F 3 "~" H 3000 5300 50  0001 C CNN
+	1    3000 5300
+	1    0    0    -1  
+$EndComp
+Connection ~ 3000 5150
+Wire Wire Line
+	3000 5150 3250 5150
+$Comp
+L power:+5V #PWR014
+U 1 1 5EC97E22
+P 3000 5500
+F 0 "#PWR014" H 3000 5350 50  0001 C CNN
+F 1 "+5V" H 3015 5673 50  0000 C CNN
+F 2 "" H 3000 5500 50  0001 C CNN
+F 3 "" H 3000 5500 50  0001 C CNN
+	1    3000 5500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	3000 5450 3000 5500
+Wire Bus Line
+	2300 3400 3000 3400
+Wire Bus Line
+	7700 3550 7700 4250
 $EndSCHEMATC
